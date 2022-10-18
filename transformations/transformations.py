@@ -223,7 +223,7 @@ True
 
 """
 
-__version__ = '2022.9.26'
+__version__ = '2022.10.18'
 
 import math
 
