@@ -229,6 +229,7 @@ import math
 
 import numpy
 
+from numba import jit
 
 def identity_matrix():
     """Return 4x4 identity/unit matrix.
@@ -1308,6 +1309,25 @@ def quaternion_about_axis(angle, axis):
     return q
 
 
+@jit(nopython=True, cache=True)
+def quaternion_about_axis_reboot(angle, axis):
+    """Return quaternion for rotation about axis.
+    >>> q = quaternion_about_axis(0.123, [1, 0, 0])
+    >>> np.allclose(q, [0.99810947, 0.06146124, 0, 0])
+    True
+    """
+    q = numpy.array([0.0, axis[0], axis[1], axis[2]])
+
+    q_len = numpy.linalg.norm(q)
+
+    if q_len > _EPS:
+        q *= numpy.sin(angle / 2.0) / q_len
+
+    q[0] = numpy.cos(angle / 2.0)
+
+    return q
+
+
 def quaternion_matrix(quaternion):
     """Return homogeneous rotation matrix from quaternion.
 
@@ -1328,6 +1348,56 @@ def quaternion_matrix(quaternion):
         return numpy.identity(4)
     q *= math.sqrt(2.0 / n)
     q = numpy.outer(q, q)
+    return numpy.array(
+        [
+            [
+                1.0 - q[2, 2] - q[3, 3],
+                q[1, 2] - q[3, 0],
+                q[1, 3] + q[2, 0],
+                0.0,
+            ],
+            [
+                q[1, 2] + q[3, 0],
+                1.0 - q[1, 1] - q[3, 3],
+                q[2, 3] - q[1, 0],
+                0.0,
+            ],
+            [
+                q[1, 3] - q[2, 0],
+                q[2, 3] + q[1, 0],
+                1.0 - q[1, 1] - q[2, 2],
+                0.0,
+            ],
+            [0.0, 0.0, 0.0, 1.0],
+        ]
+    )
+
+
+@jit(nopython=True, cache=True)
+def quaternion_matrix_reboot(quaternion):
+    """Return homogeneous rotation matrix from quaternion.
+    >>> M = quaternion_matrix([0.99810947, 0.06146124, 0, 0])
+    >>> numpy.allclose(M, rotation_matrix(0.123, [1, 0, 0]))
+    True
+    >>> M = quaternion_matrix([1, 0, 0, 0])
+    >>> numpy.allclose(M, numpy.identity(4))
+    True
+    >>> M = quaternion_matrix([0, 1, 0, 0])
+    >>> numpy.allclose(M, numpy.diag([1, -1, -1, 1]))
+    True
+    """
+
+    q = numpy.copy(quaternion)
+
+    n = numpy.dot(q, q)
+
+    if n < _EPS:
+        return numpy.identity(4)
+
+    q *= numpy.sqrt(2.0 / n)
+
+    q = numpy.outer(q, q)
+
     return numpy.array(
         [
             [
@@ -1463,6 +1533,26 @@ def quaternion_multiply(quaternion1, quaternion0):
     )
 
 
+@jit(nopython=True, cache=True)
+def quaternion_multiply_reboot(quaternion1, quaternion0):
+    """Return multiplication of two quaternions.
+    >>> q = quaternion_multiply([4, 1, -2, 3], [8, -5, 6, 7])
+    >>> np.allclose(q, [28, -44, -14, 48])
+    True
+    """
+    w0, x0, y0, z0 = quaternion0
+    w1, x1, y1, z1 = quaternion1
+    return numpy.array(
+        [
+            -x1 * x0 - y1 * y0 - z1 * z0 + w1 * w0,
+            x1 * w0 + y1 * z0 - z1 * y0 + w1 * x0,
+            -x1 * z0 + y1 * w0 + z1 * x0 + w1 * y0,
+            x1 * y0 - y1 * x0 + z1 * w0 + w1 * z0,
+        ],
+        dtype=numpy.float64,
+    )
+
+
 def quaternion_conjugate(quaternion):
     """Return conjugate of quaternion.
 
@@ -1488,6 +1578,21 @@ def quaternion_inverse(quaternion):
     """
     q = numpy.array(quaternion, dtype=numpy.float64, copy=True)
     numpy.negative(q[1:], q[1:])
+    return q / numpy.dot(q, q)
+
+
+@jit(nopython=True, cache=True)
+def quaternion_inverse_reboot(quaternion):
+    """Return inverse of quaternion.
+    >>> q0 = np.array([7., 6., 5., 4.,])
+    >>> q1 = quaternion_inverse(q0)
+    >>> np.allclose(quaternion_multiply(q0, q1), [1, 0, 0, 0])
+    True
+    """
+    q = numpy.copy(quaternion)
+
+    numpy.negative(q[1:], q[1:])
+
     return q / numpy.dot(q, q)
 
 
