@@ -231,6 +231,7 @@ import numpy
 
 from numba import jit
 
+
 def identity_matrix():
     """Return 4x4 identity/unit matrix.
 
