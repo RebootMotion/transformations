@@ -1311,8 +1311,8 @@ def quaternion_about_axis(angle, axis):
 
 
 @jit(nopython=True, cache=True)
-def quaternion_about_axis_reboot(angle, axis):
-    """Return quaternion for rotation about axis.
+def quaternion_about_axis_numba(angle, axis):
+    """Return quaternion for rotation about axis. Modified to use numba compatible functions.
     >>> q = quaternion_about_axis(0.123, [1, 0, 0])
     >>> np.allclose(q, [0.99810947, 0.06146124, 0, 0])
     True
@@ -1375,8 +1375,8 @@ def quaternion_matrix(quaternion):
 
 
 @jit(nopython=True, cache=True)
-def quaternion_matrix_reboot(quaternion):
-    """Return homogeneous rotation matrix from quaternion.
+def quaternion_matrix_numba(quaternion):
+    """Return homogeneous rotation matrix from quaternion. Modified to use numba compatible functions.
     >>> M = quaternion_matrix([0.99810947, 0.06146124, 0, 0])
     >>> numpy.allclose(M, rotation_matrix(0.123, [1, 0, 0]))
     True
@@ -1535,8 +1535,8 @@ def quaternion_multiply(quaternion1, quaternion0):
 
 
 @jit(nopython=True, cache=True)
-def quaternion_multiply_reboot(quaternion1, quaternion0):
-    """Return multiplication of two quaternions.
+def quaternion_multiply_numba(quaternion1, quaternion0):
+    """Return multiplication of two quaternions. Modified to use numba compatible functions.
     >>> q = quaternion_multiply([4, 1, -2, 3], [8, -5, 6, 7])
     >>> np.allclose(q, [28, -44, -14, 48])
     True
@@ -1583,8 +1583,8 @@ def quaternion_inverse(quaternion):
 
 
 @jit(nopython=True, cache=True)
-def quaternion_inverse_reboot(quaternion):
-    """Return inverse of quaternion.
+def quaternion_inverse_numba(quaternion):
+    """Return inverse of quaternion. Modified to use numba compatible functions.
     >>> q0 = np.array([7., 6., 5., 4.,])
     >>> q1 = quaternion_inverse(q0)
     >>> np.allclose(quaternion_multiply(q0, q1), [1, 0, 0, 0])
