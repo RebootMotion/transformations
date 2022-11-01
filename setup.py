@@ -85,7 +85,7 @@ setup_args = dict(
         # 'Documentation': 'https://',
     },
     python_requires='>=3.8',
-    install_requires=['numpy>=1.19.2'],
+    install_requires=['numpy>=1.19.2', 'numba'],
     setup_requires=['setuptools>=18.0', 'numpy>=1.19.2'],
     cmdclass={'build_ext': build_ext},
     packages=['transformations'],
